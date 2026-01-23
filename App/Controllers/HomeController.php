@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Category;
 use Framework\Core\BaseController;
 use Framework\Http\Request;
 use Framework\Http\Responses\Response;
@@ -39,19 +40,8 @@ class HomeController extends BaseController
      */
     public function index(Request $request): Response
     {
-        return $this->html();
-    }
-
-    /**
-     * Displays the contact page.
-     *
-     * This action serves the HTML view for the contact page, which is accessible to all users without any
-     * authorization.
-     *
-     * @return Response The response object containing the rendered HTML for the contact page.
-     */
-    public function contact(Request $request): Response
-    {
-        return $this->html();
+        // TODO: Secure from sql injection if orderBy is ever user-provided
+        $categories = Category::getAll(orderBy: 'name asc');
+        return $this->html(['categories' => $categories]);
     }
 }

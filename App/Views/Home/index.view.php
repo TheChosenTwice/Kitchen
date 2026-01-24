@@ -15,7 +15,7 @@
 
                     <?php foreach ($ingredients as $ingredient) : ?>
                         <?php if ($ingredient->getCategoryId() === $category->getId()) : ?>
-                            <button class="btn btn-outline-primary btn-sm ingredient-btn" data-ingredient="<?= $ingredient->getName() ?>">
+                            <button class="btn btn-outline-primary btn-sm ingredient-btn" data-ingredient="<?= $ingredient->getName() ?>" data-ingredient-id="<?= $ingredient->getId() ?>">
                                 <?= $ingredient->getName() ?>
                             </button>
                         <?php endif; ?>
@@ -27,6 +27,7 @@
         <div class="col-md-6">
             <h2>Selected Ingredients</h2>
             <ul id="selected-ingredients" class="list-group"></ul>
+            <a id="find-recipes" href="<?= $link->url('home.index', ['ingredients' => '']) ?>" class="btn btn-primary">Find Recipes</a>
         </div>
     </div>
 </div>

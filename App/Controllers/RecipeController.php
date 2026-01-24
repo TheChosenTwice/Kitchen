@@ -19,7 +19,7 @@ class RecipeController extends BaseController
         $sql = "SELECT id, title, cooking_time, image, COUNT(*) AS num_of_ingredients, 
             COUNT(CASE WHEN recipe_ingredients.ingredient_id IN ($ingredientsIds) THEN 1 END) AS num_of_ingredients_met
             FROM recipes JOIN recipe_ingredients ON recipes.id = recipe_ingredients.recipe_id
-            GROUP BY recipes.id, recipes.title
+            GROUP BY recipes.id
             HAVING num_of_ingredients_met > 0
             ORDER BY num_of_ingredients_met DESC, num_of_ingredients";
         $recipes = Recipe::executeRawSQL($sql);

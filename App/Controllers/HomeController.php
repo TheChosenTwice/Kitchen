@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Category;
+use App\Models\Ingredient;
 use Framework\Core\BaseController;
 use Framework\Http\Request;
 use Framework\Http\Responses\Response;
@@ -42,6 +43,7 @@ class HomeController extends BaseController
     {
         // TODO: Secure from sql injection if orderBy is ever user-provided
         $categories = Category::getAll(orderBy: 'name asc');
-        return $this->html(['categories' => $categories]);
+        $ingredients = Ingredient::getAll(orderBy: 'name asc');
+        return $this->html(['categories' => $categories, 'ingredients' => $ingredients]);
     }
 }

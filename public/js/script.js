@@ -3,9 +3,10 @@ const KEY = 'selectedIngredients';
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('.ingredient-btn');
     const list = document.getElementById('selected-ingredients');
-    // Store objects: {id, name}
+    // Loads stored ingredients from localStorage
     const stored = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } })();
 
+    // Sets up buttons and list based on stored ingredients
     buttons.forEach(b => {
         const name = b.dataset.ingredient;
         const id = b.dataset.ingredientId;
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const li = document.createElement('li'); li.className = 'list-group-item'; li.dataset.ingredientId = id; li.textContent = name; list.appendChild(li);
             }
         }
-
+        // Toggle button logic
         b.addEventListener('click', () => {
             b.classList.toggle('btn-outline-primary'); b.classList.toggle('btn-primary');
             const idx = stored.findIndex(item => item.id === id);
@@ -30,6 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
             try { localStorage.setItem(KEY, JSON.stringify(stored)); } catch {}
         });
     });
+
+    // Clear all button logic
+    const clearBtn = document.getElementById('clear-all');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            // Remove from localStorage
+            localStorage.removeItem(KEY);
+            // Clear UI list
+            if (list) list.innerHTML = '';
+            // Reset all ingredient buttons
+            buttons.forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline-primary');
+            });
+        });
+    }
 });
 
 // Adds to URL ingredient IDs after clicking the "Find Recipes" button

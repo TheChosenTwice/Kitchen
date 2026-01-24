@@ -24,3 +24,27 @@ document.querySelectorAll('.ingredient-btn').forEach(button => {
         }
     });
 });
+
+// Passes ingredient IDs to the URL
+document.getElementById('find-recipes').addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const ids = Array.from(document.querySelectorAll('.ingredient-btn.btn-primary'))
+        .map(btn => btn.dataset.ingredientId)
+        .join(',');
+
+    this.href = this.href.replace(/ingredients=.*/, 'ingredients=' + ids);
+    window.location.href = this.href;
+});
+
+// Clear all selected ingredients
+document.getElementById('clear-all').addEventListener('click', () => {
+    document.querySelectorAll('.ingredient-btn.btn-primary').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-primary');
+    });
+
+    document.getElementById('selected-ingredients').innerHTML = '';
+});
+
+

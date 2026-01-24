@@ -25,7 +25,7 @@
         </div>
         <!-- Right side: Selected ingredients -->
         <div class="col-md-6">
-            <h2>Selected Ingredients</h2>
+            <h2>Selected Ingredients <button id="clear-all" class="btn btn-sm btn-outline-secondary ms-2">Clear all</button></h2>
             <ul id="selected-ingredients" class="list-group"></ul>
             <a id="find-recipes" href="<?= $link->url('home.index', ['ingredients' => '']) ?>" class="btn btn-primary">Find Recipes</a>
         </div>

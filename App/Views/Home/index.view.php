@@ -4,19 +4,31 @@
 /** @var Array $ingredients */
 ?>
 
-<div class="mt-5">
-    <h1 class="text-center">What's in your fridge?</h1>
-    <div class="text-start ms-3">
-        <?php foreach ($categories as $category) : ?>
-            <h2><?= $category->getName() ?></h2>
+<div class="container mt-5">
+    <div class="row">
+        <!-- Left side: Existing content -->
+        <div class="col-md-6">
+            <h1 class="text-center">What's in your fridge?</h1>
+            <div class="text-start ms-3">
+                <?php foreach ($categories as $category) : ?>
+                    <h2><?= $category->getName() ?></h2>
 
-            <?php foreach ($ingredients as $ingredient) : ?>
-                <?php if ($ingredient->getCategoryId() === $category->getId()) : ?>
-                    <button class="btn btn-outline-primary btn-sm ingredient-btn">
-                        <?= $ingredient->getName() ?>
-                    </button>
-                <?php endif; ?>
-            <?php endforeach ?>
-        <?php endforeach ?>
+                    <?php foreach ($ingredients as $ingredient) : ?>
+                        <?php if ($ingredient->getCategoryId() === $category->getId()) : ?>
+                            <button class="btn btn-outline-primary btn-sm ingredient-btn" data-ingredient="<?= $ingredient->getName() ?>">
+                                <?= $ingredient->getName() ?>
+                            </button>
+                        <?php endif; ?>
+                    <?php endforeach ?>
+                <?php endforeach ?>
+            </div>
+        </div>
+        <!-- Right side: Selected ingredients -->
+        <div class="col-md-6">
+            <h2>Selected Ingredients</h2>
+            <ul id="selected-ingredients" class="list-group"></ul>
+        </div>
     </div>
 </div>
+
+<script src="js/script.js"></script>

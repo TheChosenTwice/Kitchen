@@ -30,4 +30,11 @@ class Recipe extends Model
     public function setImage(?string $image): void { $this->image = $image; }
     public function getAuthorId(): ?int { return $this->author_id; }
     public function setAuthorId(?int $author_id): void { $this->author_id = $author_id; }
+    public function getIngredients(): array
+    {
+        $sql = "select recipes.title, ingredients.name 
+                from recipes join recipe_ingredients ON recipes.id = recipe_ingredients.recipe_id  join ingredients ON ingredients.id = recipe_ingredients.ingredient_id
+                where recipes.id = ($this->id)";
+        return self::executeRawSQL($sql);
+    }
 }

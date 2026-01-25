@@ -32,27 +32,34 @@ class RecipeController extends BaseController
     public function index(Request $request): Response
     {
         $ingredientsIds = $request->get('ingredients');
-        // Premení URL parameter na pole čísel
-        $ids = array_filter(
-            array_map('intval', explode(',', $ingredientsIds))
-        );
+        // "33,65,31,43,44,46" => [33,65,31,43,44,46]
+        $ids = array_filter(array_map('intval', explode(',', $ingredientsIds)));
 
-        if (empty($ids)) {
-            return $this->html(['recipes' => []]);
-        }
-        // Vytvorenie reťazca ?,?,?,?,?,? ktorý sa vloží do SQL dotazu
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        if (empty($ids)) return $this->html(['recipes' => []]);
 
-        $sql = "SELECT id, title, cooking_time, image, COUNT(*) AS num_of_ingredients, 
-            COUNT(CASE WHEN recipe_ingredients.ingredient_id IN ($placeholders) THEN 1 END) AS num_of_ingredients_met
-            FROM recipes JOIN recipe_ingredients ON recipes.id = recipe_ingredients.recipe_id
-            GROUP BY recipes.id
-            HAVING num_of_ingredients_met > 0
-            ORDER BY num_of_ingredients_met DESC, num_of_ingredients";
+        // Creates and fills map if keys :id0, :id1, ... and id values
+        $namedParams = [];
+        foreach ($ids as $k => $id) $namedParams[":id$k"] = $id;
 
-        // Vykonanie surového SQL dotazu s parametrami na mieste ?,?,?,?,?,?
-        $recipes = Recipe::executeRawSQL($sql, $ids);
+        // Creates string ":id0,:id1,:id2,..." for SQL IN clause
+        $inClause = implode(',', array_keys($namedParams));
 
+        $sql = "
+        SELECT 
+            recipes.id, 
+            recipes.title, 
+            recipes.cooking_time, 
+            recipes.image, 
+            COUNT(*) AS num_of_ingredients,
+            COUNT(CASE WHEN recipe_ingredients.ingredient_id IN ($inClause) THEN 1 END) AS num_of_ingredients_met
+        FROM recipes
+        JOIN recipe_ingredients ON recipes.id = recipe_ingredients.recipe_id
+        GROUP BY recipes.id
+        HAVING num_of_ingredients_met > 0
+        ORDER BY num_of_ingredients_met DESC, num_of_ingredients";
+
+        // Executes the raw SQL with named parameters to prevent SQL injection
+        $recipes = Recipe::executeRawSQL($sql, $namedParams);
         return $this->html(['recipes' => $recipes]);
     }
 }

@@ -11,7 +11,7 @@ class User extends Model implements IIdentity
     protected ?int $id = null;
     protected string $username;
     protected string $password_hash;
-    protected ?string $created_at = null;
+    protected string $created_at;
     protected string $role = 'USER';
 
     public function getId(): ?int { return $this->id; }

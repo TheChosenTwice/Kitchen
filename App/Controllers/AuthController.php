@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Configuration;
+use App\Models\User;
 use Exception;
 use Framework\Core\BaseController;
 use Framework\Http\Request;
@@ -69,5 +70,41 @@ class AuthController extends BaseController
     {
         $this->app->getAuthenticator()->logout();
         return $this->html();
+    }
+
+    public function register(Request $request): Response
+    {
+        $message = null;
+
+        if ($request->hasValue('submit')) {
+            $username = trim((string)$request->value('username'));
+            $password = (string)$request->value('password');
+            $passwordConfirm = (string)$request->value('password_confirm');
+
+            if ($username === '' || $password === '') {
+                $message = 'Username and password are required';
+                return $this->html(compact('message'));
+            }
+
+            if ($password !== $passwordConfirm) {
+                $message = 'Passwords do not match';
+                return $this->html(compact('message'));
+            }
+
+            $existing = User::getCount('username = ?', [$username]);
+            if ($existing > 0) {
+                $message = 'Username already taken';
+                return $this->html(compact('message'));
+            }
+
+            $user = new User();
+            $user->setUsername($username);
+            $user->setPassword($password);
+            $user->save();
+            
+            return $this->redirect($this->url('login'));
+        }
+
+        return $this->html(compact('message'));
     }
 }

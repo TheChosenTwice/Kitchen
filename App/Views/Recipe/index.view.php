@@ -15,7 +15,7 @@
                     <img src="/images/<?= $recipe['image'] ?>" alt="<?= $recipe['title'] ?>">
                 </div>
                 <div class="recipe-body">
-                    <a href="<?= $link->url("recipe.recipeDetail", ["id" => $recipe['id']]) ?>">
+                    <a href="<?= $link->url("recipe.detail", ["id" => $recipe['id']]) ?>">
                         <?= $recipe['title'] ?>
                     </a>
                     <div class="meta"><strong>Cooking Time:</strong> <?= $recipe['cooking_time'] ?> minutes</div>

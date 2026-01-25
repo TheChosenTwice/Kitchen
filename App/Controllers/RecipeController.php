@@ -9,7 +9,7 @@ use Framework\Http\Responses\Response;
 
 class RecipeController extends BaseController
 {
-    public function recipeDetail(Request $request) : Response
+    public function detail(Request $request) : Response
     {
         $recipeId = (int)$request->get('id');
         $recipe = Recipe::getOne($recipeId);

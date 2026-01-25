@@ -34,7 +34,8 @@ class Recipe extends Model
     {
         $sql = "select recipes.title, ingredients.name 
                 from recipes join recipe_ingredients ON recipes.id = recipe_ingredients.recipe_id  join ingredients ON ingredients.id = recipe_ingredients.ingredient_id
-                where recipes.id = ($this->id)";
-        return self::executeRawSQL($sql);
+                where recipes.id = :id";
+        // ID won't be interpolated directly to avoid SQL injection
+        return self::executeRawSQL($sql, ['id' => $this->id]);
     }
 }

@@ -9,6 +9,25 @@ use Framework\Http\Responses\Response;
 
 class RecipeController extends BaseController
 {
+    public function recipeDetail(Request $request) : Response
+    {
+        $recipeId = (int)$request->get('id');
+        $recipe = Recipe::getOne($recipeId);
+        $ingredients = $recipe->getIngredients();
+
+        return $this->html([
+            'recipe' => [
+                'id' => $recipe->getId(),
+                'title' => $recipe->getTitle(),
+                'cooking_time' => $recipe->getCookingTime(),
+                'image' => $recipe->getImage(),
+                'instructions' => $recipe->getInstructions(),
+                'category' => $recipe->getCategory(),
+                'serving_size' => $recipe->getServingSize(),
+            ],
+            'ingredients' => $ingredients
+        ]);
+    }
 
     public function index(Request $request): Response
     {
@@ -23,7 +42,6 @@ class RecipeController extends BaseController
         }
         // Vytvorenie reťazca ?,?,?,?,?,? ktorý sa vloží do SQL dotazu
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-
 
         $sql = "SELECT id, title, cooking_time, image, COUNT(*) AS num_of_ingredients, 
             COUNT(CASE WHEN recipe_ingredients.ingredient_id IN ($placeholders) THEN 1 END) AS num_of_ingredients_met

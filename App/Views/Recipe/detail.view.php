@@ -3,6 +3,7 @@
 /** @var \Framework\Support\LinkGenerator $link */
 /** @var Array $recipe */
 /** @var Array $ingredients */
+/** @var bool $isBookmarked */
 ?>
 
 <style>
@@ -12,8 +13,8 @@
 .stat { padding:8px 6px; }
 .stat small { display:block; font-size:0.75rem; opacity:0.95; }
 .recipe-image { display:block; margin:18px auto; max-width:320px; width:100%; border-radius:4px; }
-.btn-bookmark { display:block; margin:12px auto; background:transparent; color:#f88a3a; border:1px solid #f88a3a; padding:8px 18px; border-radius:4px; font-weight:700; cursor:pointer; transition:background 0.2s,color 0.2s; }
-.btn-bookmark:hover { background:#f88a3a; color:#fff; }
+.btn-bookmark { display:block; margin:12px auto; background:#f88a3a; color:#fff; border:1px solid #f88a3a; padding:8px 18px; border-radius:4px; font-weight:700; cursor:pointer; transition:background 0.2s,color 0.2s; text-align:center; width:max-content; text-decoration:none; }
+.btn-bookmark:hover { background:#fff; color:#f88a3a; text-decoration:none; }
 .section { margin:18px 0; }
 .section h3 { margin:0 0 8px 0; font-size:0.95rem; }
 .ingredients { padding-left:18px; }
@@ -40,8 +41,12 @@
 
     <img class="recipe-image" src="/images/<?= $recipe['image'] ?? 'no-image.png' ?>" alt="<?= $recipe['title'] ?? '' ?>">
 
-    <button class="btn-bookmark">LOG IN TO BOOKMARK</button>
-
+    <div style="display:flex; justify-content:center;">
+        <a class="btn-bookmark"
+           href="<?= $link->url("recipe.bookmark", ["id" => $recipe['id']]) ?>">
+            <?= $isBookmarked ? 'Remove Bookmark' : 'Bookmark Recipe' ?>
+        </a>
+    </div>
     <div class="section">
         <h3>Ingredients</h3>
         <?php if (!empty($ingredients)) : ?>
@@ -60,4 +65,3 @@
         <div class="instructions"><?= $recipe['instructions'] ?? '' ?></div>
     </div>
 </div>
-

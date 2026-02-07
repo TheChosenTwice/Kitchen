@@ -1,8 +1,11 @@
 <?php
-/** @var \Framework\Core\IAuthenticator $auth */
 /** @var \Framework\Support\LinkGenerator $link */
 /** @var Array $recipes */
+/** @var \Framework\Core\IAuthenticator $auth */
+
+$auth = $this->app->getAuthenticator();
 ?>
+
 
 <h1>Recipe Results</h1>
 
@@ -27,7 +30,10 @@
                         <?php else: ?>
                             <span class="badge"><?= $missing ?> missing ingredients</span>
                         <?php endif; ?>
-                        <a class="btn" href="#">Log in to bookmark!</a>
+
+                        <?php if ($auth->getUser()->isLoggedIn()) : ?>
+                            <a class="btn" href="<?= $link->url("recipe.bookmark", ["id" => $recipe['id']]) ?>">Log in to bookmark!</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </li>

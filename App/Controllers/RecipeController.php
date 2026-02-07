@@ -29,9 +29,16 @@ class RecipeController extends BaseController
         ]);
     }
 
+    public function bookmark(Request $request) : Response
+    {
+        // TODO: Implement bookmarking functionality
+        return $this->redirect($this->url('index'));
+    }
+
     public function index(Request $request): Response
     {
         $ingredientsIds = $request->get('ingredients');
+        if (empty($ingredientsIds)) return $this->html(['recipes' => []]);
         // "33,65,31,43,44,46" => [33,65,31,43,44,46]
         $ids = array_filter(array_map('intval', explode(',', $ingredientsIds)));
 

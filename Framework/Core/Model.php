@@ -160,7 +160,7 @@ abstract class Model implements \JsonSerializable
 
         try {
             $sql = "SELECT " . static::getDBColumnNamesList() . " FROM `" . static::getTableName() . "` WHERE `" .
-                static::getPkColumnName() . "`=?";
+                Model::getPkColumnName() . "`=?";
             $stmt = Connection::getInstance()->prepare($sql);
             $stmt->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, static::class);
             $stmt->execute([$id]);
@@ -225,7 +225,7 @@ abstract class Model implements \JsonSerializable
                 $stmt = Connection::getInstance()->prepare($sql);
                 $stmt->execute($data);
 
-                $pkPropertyName = static::toPropertyName(static::getPkColumnName());
+                $pkPropertyName = static::toPropertyName(Model::getPkColumnName());
                 if (!isset($this->{$pkPropertyName})) {
                     $this->{$pkPropertyName} = Connection::getInstance()->lastInsertId();
                     $this->_dbId = $this->{$pkPropertyName};
@@ -234,7 +234,7 @@ abstract class Model implements \JsonSerializable
             } else {
                 $arrColumns = array_map(fn($item) => ("`" . $item . '`=:' . $item), array_keys($data));
                 $columns = implode(',', $arrColumns);
-                $sql = "UPDATE `" . static::getTableName() . "` SET $columns WHERE `" . static::getPkColumnName() .
+                $sql = "UPDATE `" . static::getTableName() . "` SET $columns WHERE `" . Model::getPkColumnName() .
                     "`=:__pk";
                 $stmt = Connection::getInstance()->prepare($sql);
                 $data["__pk"] = $this->_dbId;
@@ -258,7 +258,7 @@ abstract class Model implements \JsonSerializable
             return;
         }
         try {
-            $sql = "DELETE FROM `" . static::getTableName() . "` WHERE `" . static::getPkColumnName() . "`=?";
+            $sql = "DELETE FROM `" . static::getTableName() . "` WHERE `" . Model::getPkColumnName() . "`=?";
             $stmt = Connection::getInstance()->prepare($sql);
             $stmt->execute([$this->getIdValue()]);
             if ($stmt->rowCount() == 0) {
@@ -320,7 +320,7 @@ abstract class Model implements \JsonSerializable
             self::toPropertyName($refColumn),
             fn($e) => (isset($e->{self::toPropertyName($refColumn)}) ? $e->{self::toPropertyName($refColumn)} : null),
             fn($e) => $e->getIdValue(),
-            $modelClass::getPkColumnName(),
+            Model::getPkColumnName(),
             $ownerVal,
         );
     }
@@ -404,7 +404,7 @@ abstract class Model implements \JsonSerializable
      */
     private function getIdValue(): mixed
     {
-        $pk = static::getPkColumnName();
+        $pk = Model::getPkColumnName();
         $prop = static::toPropertyName($pk);
         return isset($this->{$prop}) ? $this->{$prop} : null;
     }

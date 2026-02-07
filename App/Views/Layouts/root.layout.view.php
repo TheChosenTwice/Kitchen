@@ -32,6 +32,9 @@
             <span class="navbar-text">Logged in user: <b><?= $user->getName() ?></b></span>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
+                    <a class="nav-link" href="<?= $link->url('recipe.favorites') ?>">Bookmarks</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="<?= $link->url('auth.logout') ?>">Log out</a>
                 </li>
             </ul>

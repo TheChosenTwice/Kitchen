@@ -30,10 +30,6 @@ $auth = $this->app->getAuthenticator();
                         <?php else: ?>
                             <span class="badge"><?= $missing ?> missing ingredients</span>
                         <?php endif; ?>
-
-                        <?php if ($auth->getUser()->isLoggedIn()) : ?>
-                            <a class="btn" href="<?= $link->url("recipe.bookmark", ["id" => $recipe['id']]) ?>">Log in to bookmark!</a>
-                        <?php endif; ?>
                     </div>
                 </div>
             </li>

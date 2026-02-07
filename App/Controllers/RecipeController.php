@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\FavouriteRecipe;
 use App\Models\Recipe;
 use Framework\Core\BaseController;
 use Framework\Http\Request;
@@ -14,6 +15,17 @@ class RecipeController extends BaseController
         $recipeId = (int)$request->get('id');
         $recipe = Recipe::getOne($recipeId);
         $ingredients = $recipe->getIngredients();
+        $isBookmarked = false;
+
+        // Je recept uz bookmarked?
+        $auth = $this->app->getAuthenticator();
+        if ($auth->getUser()->isLoggedIn()) {
+            $userId = $auth->getUser()->getId();
+            $sql = "SELECT * FROM favourite_recipes WHERE user_id = :userId AND recipe_id = :recipeId";
+            $params = [':userId' => $userId, ':recipeId' => $recipeId];
+            $favoriteRecipe = FavouriteRecipe::executeRawSQL($sql, $params);
+            $isBookmarked = !empty($favoriteRecipe);
+        }
 
         return $this->html([
             'recipe' => [
@@ -25,14 +37,64 @@ class RecipeController extends BaseController
                 'category' => $recipe->getCategory(),
                 'serving_size' => $recipe->getServingSize(),
             ],
-            'ingredients' => $ingredients
+            'ingredients' => $ingredients,
+            'isBookmarked' => $isBookmarked
         ]);
     }
 
     public function bookmark(Request $request) : Response
     {
         // TODO: Implement bookmarking functionality
-        return $this->redirect($this->url('index'));
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn()) {
+            return $this->redirect($this->url('auth.index'));
+        }
+
+        $recipeId = (int)$request->get('id');
+        $userId = $auth->getUser()->getId();
+        $recipe = Recipe::getOne($recipeId);
+
+        $sql = "SELECT * FROM favourite_recipes WHERE user_id = :userId AND recipe_id = :recipeId";
+        $params = [':userId' => $userId, ':recipeId' => $recipeId];
+        $favoriteRecipe = FavouriteRecipe::executeRawSQL($sql, $params);
+
+        // Ak bol uz v oblubenych odstran
+        if (!empty($favoriteRecipe)) {
+            $sql = "DELETE FROM favourite_recipes WHERE user_id = :userId AND recipe_id = :recipeId";
+            FavouriteRecipe::executeRawSQL($sql, [':userId' => $userId, ':recipeId' => $recipeId]);
+            return $this->redirect($this->url('detail', ['id' => $recipeId]));
+        }
+
+        $favoriteRecipe = new FavouriteRecipe();
+        $favoriteRecipe->setUserId($auth->getUser()->getId());
+        $favoriteRecipe->setRecipeId($recipe->getId());
+        $favoriteRecipe->save();
+
+        return $this->redirect($this->url('detail', ['id' => $recipeId]));
+    }
+
+    public function favorites(Request $request) : Response
+    {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn()) {
+            return $this->redirect($this->url('auth.index'));
+        }
+
+        $userId = $auth->getUser()->getId();
+        // ziska riadky idciek
+        $favoriteRecipesIds = FavouriteRecipe::executeRawSQL(
+            "SELECT recipe_id FROM favourite_recipes WHERE user_id = :userId", [':userId' => $userId]);
+        // premeni na pole integerov
+        $ids = array_map('intval', array_column($favoriteRecipesIds, 'recipe_id'));
+        $ids = array_values(array_filter($ids));
+
+        if (empty($ids)) return $this->html(['recipes' => []]);
+
+        // vytvori string "?,?,?,...", potom sa doplnia za ne $ids
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $recipes = Recipe::getAll("`id` IN ($placeholders)", $ids);
+
+        return $this->html(['recipes' => $recipes]);
     }
 
     public function index(Request $request): Response

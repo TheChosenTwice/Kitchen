@@ -51,16 +51,49 @@ class IngredientController extends BaseController
 
     public function edit(Request $request)
     {
-        return $this->redirect($this->url("ingredient.index"));
+        if(!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+
+        $message = null;
+        $categories = \App\Models\Category::getAll(orderBy: 'name asc');
+
+        $id = (int)$request->value('id');
+        $ingredient = Ingredient::getOne($id);
+        if (!$ingredient) return $this->redirect($this->url("ingredient.index"));
+
+        if ($request->hasValue('submit')) {
+            $name = (string)$request->value('name');
+            $categoryId = (int)$request->value('category');
+
+            $message = $this->validateIngredientData($name, $categoryId);
+            if ($message !== null) {
+                return $this->html(compact('message', 'ingredient', 'categories'));
+            }
+
+            $ingredient->setName($name);
+            $ingredient->setCategoryId($categoryId);
+            $ingredient->save();
+            return $this->redirect($this->url("ingredient.index"));
+        }
+
+        return $this->html(compact('ingredient', 'categories', 'message'));
     }
 
     public function delete(Request $request)
     {
+        if (!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+
+        $id = (int)$request->value('id');
+        $ingredient = Ingredient::getOne($id);
+        if (!$ingredient) return $this->redirect($this->url("ingredient.index"));
+        $ingredient->delete();
         return $this->redirect($this->url("ingredient.index"));
     }
 
     private function validateIngredientData(string $name, int $categoryId): ?string
     {
+        if (trim($name) === '') {
+            return 'Name is required';
+        }
         if (strlen($name) > 128) {
             return 'Name must be at most 128 characters long';
         }

@@ -51,7 +51,7 @@ use Framework\Support\LinkGenerator;
                         <ul class="navbar-nav ms-auto">
                             <?php if (User::findByUsername($user->getName())->getRole() === 'ADMIN') { ?>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="<?= $link->url('admin.index') ?>">Admin</a>
+                                    <a class="nav-link" href="<?= $link->url('admin.index') ?>">Admin Panel</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="<?= $link->url('recipe.create') ?>">New Recipe</a>

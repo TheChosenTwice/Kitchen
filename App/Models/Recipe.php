@@ -38,4 +38,10 @@ class Recipe extends Model
         // ID won't be interpolated directly to avoid SQL injection
         return self::executeRawSQL($sql, ['id' => $this->id]);
     }
+    public function getIngredientsIds()
+    {
+        $sql = "select recipe_ingredients.ingredient_id
+                from recipes join recipe_ingredients ON recipes.id = recipe_ingredients.recipe_id  where recipes.id = :id";
+        return self::executeRawSQL($sql, ['id' => $this->id]);
+    }
 }

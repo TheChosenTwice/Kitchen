@@ -20,7 +20,7 @@ $view->setLayout('auth');
                     <form class="form-signin" method="post" action="<?= $link->url("register") ?>">
                         <div class="form-label-group mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input name="username" type="text" id="username" class="form-control" placeholder="Username" required autofocus>
+                            <input name="username" type="text" id="username" class="form-control" maxlength="64" placeholder="Username" required autofocus>
                         </div>
 
                         <div class="form-label-group mb-3">

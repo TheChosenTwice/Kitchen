@@ -72,6 +72,16 @@ class AuthController extends BaseController
         return $this->html();
     }
 
+    private function validateUserRegistration($username, $password, $passwordConfirm): ?string
+    {
+        if ($username === '' || $password === '') return 'Username and password are required';
+        if (mb_strlen($username) > 64) return 'Username must be at most 64 characters.';
+        if ($password !== $passwordConfirm) return 'Passwords do not match';
+        $existing = User::getCount('username = ?', [$username]);
+        if ($existing > 0) return 'Username already taken';
+        return null;
+    }
+
     public function register(Request $request): Response
     {
         $message = null;
@@ -81,21 +91,8 @@ class AuthController extends BaseController
             $password = (string)$request->value('password');
             $passwordConfirm = (string)$request->value('password_confirm');
 
-            if ($username === '' || $password === '') {
-                $message = 'Username and password are required';
-                return $this->html(compact('message'));
-            }
-
-            if ($password !== $passwordConfirm) {
-                $message = 'Passwords do not match';
-                return $this->html(compact('message'));
-            }
-
-            $existing = User::getCount('username = ?', [$username]);
-            if ($existing > 0) {
-                $message = 'Username already taken';
-                return $this->html(compact('message'));
-            }
+            $message = $this->validateUserRegistration($username, $password, $passwordConfirm);
+            if ($message !== null) return $this->html(compact('message'));
 
             $user = new User();
             $user->setUsername($username);

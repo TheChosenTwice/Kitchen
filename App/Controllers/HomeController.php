@@ -41,7 +41,6 @@ class HomeController extends BaseController
      */
     public function index(Request $request): Response
     {
-        // TODO: Secure from sql injection if orderBy is ever user-provided
         $categories = Category::getAll(orderBy: 'name asc');
         $ingredients = Ingredient::getAll(orderBy: 'name asc');
         return $this->html(['categories' => $categories, 'ingredients' => $ingredients]);

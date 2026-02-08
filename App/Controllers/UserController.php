@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\FavouriteRecipe;
 use App\Models\User;
 use Framework\Core\BaseController;
 use Framework\Http\Request;
@@ -63,5 +64,61 @@ class UserController extends BaseController
         if (!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
         $users = User::getAll(orderBy: 'id asc');
         return $this->html(['users' => $users]);
+    }
+
+    public function delete(Request $request): Response
+    {
+        if (!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+
+        $id = (int)$request->value('id');
+        $user = User::getOne($id);
+        if (!$user) return $this->redirect($this->url("user.read"));
+        FavouriteRecipe::executeRawSQL('DELETE FROM favourite_recipes WHERE user_id = ?', [$id]);
+        $user->delete();
+        return $this->redirect($this->url("user.read"));
+    }
+
+    public function create(Request $request): Response
+    {
+        if (!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+
+        $message = null;
+
+        if ($request->hasValue('submit')) {
+            $username = trim((string)$request->value('username'));
+            $password = (string)$request->value('password');
+            $role = $request->value('is_admin') ? 'ADMIN' : 'USER';
+
+            if ($username === '' || $password === '') {
+                $message = 'Username and password are required';
+                return $this->html(compact('message'));
+            }
+            if (mb_strlen($username) > 64) {
+                $message = 'Username must be at most 64 characters.';
+                return $this->html(compact('message'));
+            }
+            $existing = User::getCount('username = ?', [$username]);
+            if ($existing > 0) {
+                $message = 'Username already taken';
+                return $this->html(compact('message'));
+            }
+
+            $user = new User();
+            $user->setUsername($username);
+            $user->setPassword($password);
+            $user->setRole($role);
+            $user->save();
+
+            return $this->redirect($this->url("user.read"));
+        }
+
+        return $this->html(compact('message'));
+    }
+
+    public function edit(Request $request): Response
+    {
+        if (!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+
+        return $this->redirect($this->url("user.read"));
     }
 }

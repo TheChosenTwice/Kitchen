@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Category;
 use App\Models\FavouriteRecipe;
+use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\User;
 use Framework\Core\BaseController;
@@ -141,9 +142,10 @@ class RecipeController extends BaseController
         }
 
         $categories = Category::getAll(orderBy: 'name asc');
+        $ingredients = Ingredient::getAll(orderBy: 'name asc');
         $message = $request->get('message');
 
-        return $this->html(['categories' => $categories, 'message' => $message]);
+        return $this->html(['categories' => $categories, 'ingredients' => $ingredients, 'message' => $message]);
     }
 
     private function validateRecipe($title, $instructions, $cookingTime, $category, $servingSize, $imageFile): ?string
@@ -181,12 +183,36 @@ class RecipeController extends BaseController
         $servingSize = (int)$request->value('serving_size');
         $instructions = trim((string)$request->value('instructions'));
         $authorId = User::findByUsername($auth->getUser()->getName())->getId();
+        $imageFile = $_FILES['image'] ?? null;
 
+        // Validacia vstupov
         $message = $this->validateRecipe($title, $instructions, $cookingTime, $category, $servingSize, $_FILES['image'] ?? null);
-        if ($message !== null)
-            return $this->redirect($this->url('create', ['message' => $message]));
+        if ($message !== null) return $this->redirect($this->url('create', ['message' => $message]));
 
+        // Upload obrazku do public/images a ziskanie nazvu suboru
+        $fileName = null;
+        if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../../public/images/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $extension = pathinfo($imageFile['name'], PATHINFO_EXTENSION);
+            $uniqueName = uniqid('img_', true) . '.' . $extension;
+            $targetPath = $uploadDir . $uniqueName;
+            if (move_uploaded_file($imageFile['tmp_name'], $targetPath)) $fileName = $uniqueName;
+        }
 
+        $recipe = new Recipe();
+        $recipe->setTitle($title);
+        $recipe->setCookingTime($cookingTime);
+        $recipe->setCategory($category);
+        $recipe->setServingSize($servingSize);
+        $recipe->setInstructions($instructions);
+        $recipe->setAuthorId($authorId);
+        $recipe->setImage($fileName);
+        $recipe->save();
+
+        // TODO: pridat ingrediencie do recipe_ingredients
 
         return $this->html();
     }

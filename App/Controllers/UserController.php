@@ -49,4 +49,19 @@ class UserController extends BaseController
         if ($newPassword !== $newPasswordConfirm) return 'New passwords do not match.';
         return null;
     }
+
+    private function isAuthorized(Request $request): bool
+    {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn()) return false;
+        $user = \App\Models\User::findByUsername($auth->getUser()->getName());
+        return $user->getRole() === 'ADMIN';
+    }
+
+    public function read(Request $request): Response
+    {
+        if (!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+        $users = User::getAll(orderBy: 'id asc');
+        return $this->html(['users' => $users]);
+    }
 }

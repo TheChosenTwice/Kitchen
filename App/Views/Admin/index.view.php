@@ -18,7 +18,7 @@
                 <div class="card-body">
                     <h2 class="h5 card-title mb-2">Users</h2>
                     <p class="card-text text-muted mb-3">View and manage application users.</p>
-                    <a class="btn btn-primary" href="<?= $link->url('admin.users') ?>">Open</a>
+                    <a class="btn btn-primary" href="<?= $link->url('user.read') ?>">Open</a>
                 </div>
             </div>
         </div>
@@ -49,16 +49,6 @@
                     <h2 class="h5 card-title mb-2">Ingredient Categories</h2>
                     <p class="card-text text-muted mb-3">Manage categories displayed on the home page.</p>
                     <a class="btn btn-primary" href="<?= $link->url('category.index') ?>">Open</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h2 class="h5 card-title mb-2">Favorite Recipes</h2>
-                    <p class="card-text text-muted mb-3">See what recipes users bookmarked.</p>
-                    <a class="btn btn-primary" href="<?= $link->url('admin.favoriteRecipes') ?>">Open</a>
                 </div>
             </div>
         </div>

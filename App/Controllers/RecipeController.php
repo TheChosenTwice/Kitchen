@@ -212,10 +212,16 @@ class RecipeController extends BaseController
         $recipe->setImage($fileName);
         $recipe->save();
 
-        // TODO: pridat ingrediencie do recipe_ingredients
+        $ingredientIds = $request->value('ingredients');
+        if (!is_array($ingredientIds)) $ingredientIds = [];
+        foreach ($ingredientIds as $id) {
+            $sql = "INSERT INTO recipe_ingredients (recipe_id, ingredient_id) VALUES (:recipeId, :ingredientId)";
+            Recipe::executeRawSQL($sql, [':recipeId' => $recipe->getId(), ':ingredientId' => (int)$id]);
+        }
 
-        return $this->html();
+        // TODO delete image file if recipe is deleted
+        // TODO delete recipe_ingredients rows if recipe is deleted
+
+        return $this->redirect($this->url('create', ['message' => 'Recipe posted successfully!']));
     }
-
-
 }

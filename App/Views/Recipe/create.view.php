@@ -42,7 +42,7 @@ use Framework\Support\LinkGenerator;
                         <div class="form-label-group mb-3">
                             <label for="serving_size" class="form-label">Serving size *</label>
                             <input name="serving_size" type="number" id="serving_size" class="form-control" min="1" max="1000"
-                                   placeholder="Number of servings">
+                                   placeholder="Number of servings" required>
                         </div>
 
                         <!-- Collapse button-->

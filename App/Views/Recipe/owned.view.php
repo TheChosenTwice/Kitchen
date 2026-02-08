@@ -19,9 +19,12 @@
                         <?= $recipe->getTitle() ?>
                     </a>
                     <div class="meta"><strong>Cooking Time:</strong> <?= $recipe->getCookingTime() ?> minutes</div>
-                    <form method="post" action="<?= $link->url('recipe.delete', ['id' => $recipe->getId()]) ?>" onsubmit="return confirm('Are you sure you want to delete this recipe?');" style="margin-top: 8px;">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
+                    <div style="margin-top: 8px;">
+                        <a href="<?= $link->url('recipe.update', ['id' => $recipe->getId()]) ?>" class="btn btn-primary" style="margin-right: 8px;">Edit</a>
+                        <form method="post" action="<?= $link->url('recipe.delete', ['id' => $recipe->getId()]) ?>" onsubmit="return confirm('Are you sure you want to delete this recipe?');" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
                 </div>
             </li>
         <?php endforeach; ?>

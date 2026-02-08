@@ -2,8 +2,10 @@
 
 namespace App\Controllers;
 
+use App\Models\Category;
 use App\Models\FavouriteRecipe;
 use App\Models\Recipe;
+use App\Models\User;
 use Framework\Core\BaseController;
 use Framework\Http\Request;
 use Framework\Http\Responses\Response;
@@ -44,7 +46,6 @@ class RecipeController extends BaseController
 
     public function bookmark(Request $request) : Response
     {
-        // TODO: Implement bookmarking functionality
         $auth = $this->app->getAuthenticator();
         if (!$auth->getUser()->isLoggedIn()) {
             return $this->redirect($this->url('auth.index'));
@@ -131,4 +132,64 @@ class RecipeController extends BaseController
         $recipes = Recipe::executeRawSQL($sql, $namedParams);
         return $this->html(['recipes' => $recipes]);
     }
+
+    public function create(Request $request) : Response
+    {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn()) {
+            return $this->redirect($this->url('auth.index'));
+        }
+
+        $categories = Category::getAll(orderBy: 'name asc');
+        $message = $request->get('message');
+
+        return $this->html(['categories' => $categories, 'message' => $message]);
+    }
+
+    private function validateRecipe($title, $instructions, $cookingTime, $category, $servingSize, $imageFile): ?string
+    {
+        if ($title === '' || $instructions === '') return 'Title and instructions are required';
+        if (mb_strlen($title) > 255) return 'Title must be at most 255 characters.';
+
+        $existing = Recipe::getCount('title = ?', [$title]);
+        if ($existing > 0) return 'Recipe with this title already exists';
+
+        if ($cookingTime < 0 || $cookingTime > 10000) return 'Cooking time must be between 1 and 10000.';
+        if (mb_strlen($category) > 64) return 'Category must be at most 64 characters.';
+        if ($servingSize < 1 || $servingSize > 1000) return 'Serving size must be between 1 and 1000.';
+
+        if (isset($imageFile) && $imageFile['error'] === UPLOAD_ERR_OK) {
+            $fileTmp = $imageFile['tmp_name'];
+            $fileSize = $imageFile['size'];
+            $fileType = mime_content_type($fileTmp);
+            if (!str_starts_with($fileType, 'image/')) return 'Uploaded file must be an image.';
+            if ($fileSize > 2 * 1024 * 1024) return 'Image size must be less than 2MB.';
+        }
+        return null;
+    }
+
+    public function store(Request $request) : Response
+    {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn()) {
+            return $this->redirect($this->url('auth.index'));
+        }
+
+        $title = trim((string)$request->value('title'));
+        $cookingTime = (int)$request->value('cooking_time');
+        $category = trim((string)$request->value('category'));
+        $servingSize = (int)$request->value('serving_size');
+        $instructions = trim((string)$request->value('instructions'));
+        $authorId = User::findByUsername($auth->getUser()->getName())->getId();
+
+        $message = $this->validateRecipe($title, $instructions, $cookingTime, $category, $servingSize, $_FILES['image'] ?? null);
+        if ($message !== null)
+            return $this->redirect($this->url('create', ['message' => $message]));
+
+
+
+        return $this->html();
+    }
+
+
 }

@@ -51,4 +51,15 @@ class CategoryController extends BaseController
         $user = \App\Models\User::findByUsername($auth->getUser()->getName());
         return $user->getRole() === 'ADMIN';
     }
+
+    public function delete(Request $request): Response
+    {
+        if (!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+
+        $id = (int)$request->value('id');
+        $category = Category::getOne($id);
+        if (!$category) return $this->redirect($this->url("category.index"));
+        $category->delete();
+        return $this->redirect($this->url("category.index"));
+    }
 }

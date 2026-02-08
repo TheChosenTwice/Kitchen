@@ -42,7 +42,8 @@
                                         Edit
                                     </a>
                                     <a class="btn btn-outline-danger"
-                                       href="<?= $link->url('category.delete', ['id' => $category->getId()]) ?>">
+                                       href="<?= $link->url('category.delete', ['id' => $category->getId()]) ?>"
+                                       onclick="return confirm('Are you sure you want to delete this category?');">
                                         Delete
                                     </a>
                                 </div>

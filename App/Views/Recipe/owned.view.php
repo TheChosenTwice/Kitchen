@@ -3,7 +3,7 @@
 /** @var Array $recipes */
 ?>
 
-<h1>Your recipes</h1>
+<h1>My recipes</h1>
 
 <?php if (empty($recipes)) : ?>
     <p class="no-results">Upload your first recipe <a href="<?= $link->url('recipe.create') ?>">here!</a></p>
@@ -19,6 +19,9 @@
                         <?= $recipe->getTitle() ?>
                     </a>
                     <div class="meta"><strong>Cooking Time:</strong> <?= $recipe->getCookingTime() ?> minutes</div>
+                    <form method="post" action="<?= $link->url('recipe.delete', ['id' => $recipe->getId()]) ?>" onsubmit="return confirm('Are you sure you want to delete this recipe?');" style="margin-top: 8px;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
                 </div>
             </li>
         <?php endforeach; ?>

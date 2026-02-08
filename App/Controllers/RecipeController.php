@@ -250,4 +250,84 @@ class RecipeController extends BaseController
         }
         return $this->redirect($this->url('owned'));
     }
+
+    public function update(Request $request) : Response
+    {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn())
+            return $this->redirect($this->url('auth.index'));
+
+        $recipeId = (int)$request->get('id');
+        $recipe = Recipe::getOne($recipeId);
+        if (!$recipe || $recipe->getAuthorId() !== User::findByUsername($auth->getUser()->getName())->getId()) {
+            return $this->redirect($this->url('owned'));
+        }
+        $temp = $recipe->getIngredientsIds();
+        $recipeIngredients = array_map(fn($row) => $row['ingredient_id'], $temp);
+
+        $categories = Category::getAll(orderBy: 'name asc');
+        $ingredients = Ingredient::getAll(orderBy: 'name asc');
+        $message = $request->get('message');
+
+        return $this->html([
+            'categories' => $categories,
+            'ingredients' => $ingredients,
+            'message' => $message,
+            'recipe' => $recipe,
+            'recipeIngredients' => $recipeIngredients
+        ]);
+    }
+
+    public function saveUpdate(Request $request) : Response
+    {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn())
+            return $this->redirect($this->url('auth.index'));
+
+        $recipeId = (int)$request->get('id');
+        $recipe = Recipe::getOne($recipeId);
+        if (!$recipe || $recipe->getAuthorId() !== User::findByUsername($auth->getUser()->getName())->getId()) {
+            return $this->redirect($this->url('owned'));
+        }
+
+        $title = trim((string)$request->value('title'));
+        $cookingTime = (int)$request->value('cooking_time');
+        $category = trim((string)$request->value('category'));
+        $servingSize = (int)$request->value('serving_size');
+        $instructions = trim((string)$request->value('instructions'));
+
+        $message = $this->validateRecipe($recipeId, $instructions, $cookingTime, $category, $servingSize, $_FILES['image'] ?? null);
+        if ($message !== null) return $this->redirect($this->url('update', ['message' => $message]));
+
+        $imageFile = $_FILES['image'] ?? null;
+        $fileName = null;
+        if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../../public/images/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $extension = pathinfo($imageFile['name'], PATHINFO_EXTENSION);
+            $uniqueName = uniqid('img_', true) . '.' . $extension;
+            $targetPath = $uploadDir . $uniqueName;
+            if (move_uploaded_file($imageFile['tmp_name'], $targetPath)) $fileName = $uniqueName;
+            $recipe->setImage($fileName);
+        }
+
+        $recipe->setTitle($title);
+        $recipe->setCookingTime($cookingTime);
+        $recipe->setCategory($category);
+        $recipe->setServingSize($servingSize);
+        $recipe->setInstructions($instructions);
+        $recipe->save();
+
+        Recipe::executeRawSQL('DELETE FROM recipe_ingredients WHERE recipe_id = ?', [$recipeId]);
+        $ingredientIds = $request->value('ingredients');
+        if (!is_array($ingredientIds)) $ingredientIds = [];
+        foreach ($ingredientIds as $id) {
+            $sql = "INSERT INTO recipe_ingredients (recipe_id, ingredient_id) VALUES (:recipeId, :ingredientId)";
+            Recipe::executeRawSQL($sql, [':recipeId' => $recipe->getId(), ':ingredientId' => (int)$id]);
+        }
+
+        return $this->redirect($this->url('update', ['message' => 'Recipe updated successfully!']));
+    }
 }

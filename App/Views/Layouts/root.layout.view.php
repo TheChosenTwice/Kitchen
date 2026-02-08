@@ -55,7 +55,7 @@ use Framework\Support\LinkGenerator;
                                 <a class="nav-link" href="<?= $link->url('recipe.create') ?>">New Recipe</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<?= $link->url('recipe.owned') ?>">Your Recipes</a>
+                                <a class="nav-link" href="<?= $link->url('recipe.owned') ?>">My Recipes</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="<?= $link->url('auth.logout') ?>">Log out</a>

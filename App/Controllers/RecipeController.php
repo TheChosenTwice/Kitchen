@@ -218,10 +218,6 @@ class RecipeController extends BaseController
             $sql = "INSERT INTO recipe_ingredients (recipe_id, ingredient_id) VALUES (:recipeId, :ingredientId)";
             Recipe::executeRawSQL($sql, [':recipeId' => $recipe->getId(), ':ingredientId' => (int)$id]);
         }
-
-        // TODO delete image file if recipe is deleted
-        // TODO delete recipe_ingredients rows if recipe is deleted
-
         return $this->redirect($this->url('create', ['message' => 'Recipe posted successfully!']));
     }
 
@@ -235,4 +231,23 @@ class RecipeController extends BaseController
         return $this->html(['recipes' => $recipes]);
     }
 
+    public function delete(Request $request) : Response
+    {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn()) return $this->redirect($this->url('auth.index'));
+
+        $recipeId = (int)$request->get('id');
+        $recipe = Recipe::getOne($recipeId);
+        $recipeImage = $recipe->getImage();
+        if ($recipe && $recipe->getAuthorId() === User::findByUsername($auth->getUser()->getName())->getId()) {
+            if ($recipeImage) {
+                $imagePath = __DIR__ . '/../../public/images/' . $recipeImage;
+                if (file_exists($imagePath)) unlink($imagePath);
+            }
+            Recipe::executeRawSQL('DELETE FROM recipe_ingredients WHERE recipe_id = ?', [$recipeId]);
+            FavouriteRecipe::executeRawSQL('DELETE FROM favourite_recipes WHERE recipe_id = ?', [$recipeId]);
+            $recipe->delete();
+        }
+        return $this->redirect($this->url('owned'));
+    }
 }

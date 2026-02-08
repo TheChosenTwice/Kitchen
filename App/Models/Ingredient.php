@@ -38,6 +38,6 @@ class Ingredient extends Model
     public function getCategoryName(): ?string
     {
         $category = Category::getOne($this->category_id);
-        return $category->getName() ?: 'Uncategorized';
+        return $category ? $category->getName() : 'Uncategorized';
     }
 }

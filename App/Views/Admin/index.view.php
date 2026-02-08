@@ -28,7 +28,7 @@
                 <div class="card-body">
                     <h2 class="h5 card-title mb-2">Ingredients</h2>
                     <p class="card-text text-muted mb-3">Manage ingredient list used in recipes.</p>
-                    <a class="btn btn-primary" href="<?= $link->url('admin.ingredients') ?>">Open</a>
+                    <a class="btn btn-primary" href="<?= $link->url('ingredient.index') ?>">Open</a>
                 </div>
             </div>
         </div>

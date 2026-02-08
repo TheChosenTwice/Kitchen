@@ -3,6 +3,7 @@
 /** @var IAuthenticator $auth */
 /** @var string|null $message */
 /** @var Array $categories */
+/** @var Array $ingredients */
 
 use Framework\Core\IAuthenticator;
 use Framework\Support\LinkGenerator;
@@ -42,6 +43,25 @@ use Framework\Support\LinkGenerator;
                             <label for="serving_size" class="form-label">Serving size</label>
                             <input name="serving_size" type="number" id="serving_size" class="form-control" min="1" max="1000"
                                    placeholder="Number of servings">
+                        </div>
+
+                        <!-- Collapse button-->
+                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#ingredientsCollapse" aria-expanded="false" aria-controls="ingredientsCollapse">
+                            Ingredients
+                        </button>
+                        <!-- Ingredients -->
+                        <div class="collapse mt-2" id="ingredientsCollapse">
+                            <div class="card card-body">
+                                <?php foreach ($categories as $category) : ?>
+                                    <h6 class="text-success mt-3"><?= $category->getName() ?></h6>
+
+                                    <?php foreach ($ingredients as $ingredient) : ?>
+                                        <?php if ($ingredient->getCategoryId() === $category->getId()) : ?>
+                                            <label><input type="checkbox" name="ingredients[]" value="<?= $ingredient->getId() ?>"> <?= $ingredient->getName() ?></label><br>
+                                        <?php endif; ?>
+                                    <?php endforeach ?>
+                                <?php endforeach ?>
+                            </div>
                         </div>
 
                         <div class="form-label-group mb-3">

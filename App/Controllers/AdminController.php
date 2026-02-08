@@ -5,6 +5,7 @@ namespace App\Controllers;
 use Framework\Core\BaseController;
 use Framework\Http\Request;
 use Framework\Http\Responses\Response;
+use http\Client\Curl\User;
 
 /**
  * Class AdminController
@@ -39,6 +40,11 @@ class AdminController extends BaseController
      */
     public function index(Request $request): Response
     {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn()) return $this->redirect($this->url('auth.login'));
+        $user = \App\Models\User::findByUsername($auth->getUser()->getName());
+        if ($user->getRole() !== 'ADMIN') return $this->redirect($this->url('home.index'));
+
         return $this->html();
     }
 }

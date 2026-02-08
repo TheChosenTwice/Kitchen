@@ -22,4 +22,52 @@ class IngredientController extends BaseController
         $ingredients = Ingredient::getAll(orderBy: 'name asc');
         return $this->html(['ingredients' => $ingredients]);
     }
+
+    public function create(Request $request): Response
+    {
+        if(!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+
+        $message = null;
+        $categories = \App\Models\Category::getAll(orderBy: 'name asc');
+
+        if ($request->hasValue('submit')) {
+            $name = (string)$request->value('name');
+            $categoryId = (int)$request->value('category');
+
+            $message = $this->validateIngredientData($name, $categoryId);
+            if ($message !== null) {
+                return $this->html(['message' => $message, 'categories' => $categories]);
+            }
+
+            $ingredient = new Ingredient();
+            $ingredient->setName($name);
+            $ingredient->setCategoryId($categoryId);
+            $ingredient->save();
+            return $this->redirect($this->url("ingredient.index"));
+        }
+
+        return $this->html(['message' => $message, 'categories' => $categories]);
+    }
+
+    public function edit(Request $request)
+    {
+        return $this->redirect($this->url("ingredient.index"));
+    }
+
+    public function delete(Request $request)
+    {
+        return $this->redirect($this->url("ingredient.index"));
+    }
+
+    private function validateIngredientData(string $name, int $categoryId): ?string
+    {
+        if (strlen($name) > 128) {
+            return 'Name must be at most 128 characters long';
+        }
+        $exists = Ingredient::getCount('name = ? AND category_id = ?', [$name, $categoryId]);
+        if ($exists > 0) {
+            return 'This ingredient already exists in the selected category';
+        }
+        return null;
+    }
 }

@@ -209,7 +209,8 @@ class RecipeController extends BaseController
         $recipe->setServingSize($servingSize);
         $recipe->setInstructions($instructions);
         $recipe->setAuthorId($authorId);
-        $recipe->setImage($fileName);
+        if (!$fileName) $recipe->setImage("no-image.png");
+        else $recipe->setImage($fileName);
         $recipe->save();
 
         $ingredientIds = $request->value('ingredients');

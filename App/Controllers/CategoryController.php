@@ -26,13 +26,9 @@ class CategoryController extends BaseController
 
         if ($request->hasValue('submit')) {
             $name = (string)$request->value('name');
-            if (strlen($name) > 100) {
-                $message = 'Name must be at most 100 characters long';
-                return $this->html(compact('message'));
-            }
-            $exists = Category::getCount('name = ?', [$name]);
-            if ($exists > 0) {
-                $message = 'A category with this name already exists';
+
+            $message = $this->validateCategoryData($name);
+            if ($message !== null) {
                 return $this->html(compact('message'));
             }
 
@@ -61,5 +57,43 @@ class CategoryController extends BaseController
         if (!$category) return $this->redirect($this->url("category.index"));
         $category->delete();
         return $this->redirect($this->url("category.index"));
+    }
+
+    public function edit(Request $request): Response
+    {
+        if (!$this->isAuthorized($request)) return $this->redirect($this->url("home.index"));
+
+        $id = (int)$request->value('id');
+        $category = Category::getOne($id);
+
+        if (!$category) return $this->redirect($this->url("category.index"));
+
+        if ($request->hasValue('submit')) {
+            $name = (string)$request->value('name');
+
+            $message = $this->validateCategoryData($name, $id);
+            if ($message !== null) {
+                return $this->html(compact('message', 'category'));
+            }
+
+            $category->setName($name);
+            $category->save();
+            return $this->redirect($this->url("category.index"));
+        }
+
+        if (!$category) return $this->redirect($this->url("category.index"));
+        return $this->html(compact('category'));
+    }
+
+    private function validateCategoryData(string $name, int $id = null): ?string
+    {
+        if (strlen($name) > 100) {
+            return 'Name must be at most 100 characters long';
+        }
+        $exists = Category::getCount('name = ?' . ($id ? ' AND id != ?' : ''), $id ? [$name, $id] : [$name]);
+        if ($exists > 0) {
+            return 'A category with this name already exists';
+        }
+        return null;
     }
 }

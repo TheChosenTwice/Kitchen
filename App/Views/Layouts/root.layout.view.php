@@ -4,6 +4,7 @@
 /** @var AppUser $user */
 /** @var LinkGenerator $link */
 
+use App\Models\User;
 use Framework\Auth\AppUser;
 use Framework\Support\LinkGenerator;
 
@@ -48,18 +49,33 @@ use Framework\Support\LinkGenerator;
                             Logged in user: <b><?= $user->getName() ?></b>
                         </span>
                         <ul class="navbar-nav ms-auto">
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= $link->url('recipe.favorites') ?>">Bookmarks</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= $link->url('recipe.create') ?>">New Recipe</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= $link->url('recipe.owned') ?>">My Recipes</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= $link->url('auth.logout') ?>">Log out</a>
-                            </li>
+                            <?php if (User::findByUsername($user->getName())->getRole() === 'ADMIN') { ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= $link->url('admin.index') ?>">Admin</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= $link->url('recipe.create') ?>">New Recipe</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= $link->url('recipe.owned') ?>">All Recipes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= $link->url('auth.logout') ?>">Log out</a>
+                                </li>
+                            <?php } else { ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= $link->url('recipe.favorites') ?>">Bookmarks</a>
+                                </li>
+                               <li class="nav-item">
+                                    <a class="nav-link" href="<?= $link->url('recipe.create') ?>">New Recipe</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= $link->url('recipe.owned') ?>">My Recipes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= $link->url('auth.logout') ?>">Log out</a>
+                                </li>
+                            <?php } ?>
                         </ul>
                     </div>
                 </div>

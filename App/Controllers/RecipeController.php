@@ -137,9 +137,7 @@ class RecipeController extends BaseController
     public function create(Request $request) : Response
     {
         $auth = $this->app->getAuthenticator();
-        if (!$auth->getUser()->isLoggedIn()) {
-            return $this->redirect($this->url('auth.index'));
-        }
+        if (!$auth->getUser()->isLoggedIn()) return $this->redirect($this->url('auth.index'));
 
         $categories = Category::getAll(orderBy: 'name asc');
         $ingredients = Ingredient::getAll(orderBy: 'name asc');
@@ -173,9 +171,7 @@ class RecipeController extends BaseController
     public function store(Request $request) : Response
     {
         $auth = $this->app->getAuthenticator();
-        if (!$auth->getUser()->isLoggedIn()) {
-            return $this->redirect($this->url('auth.index'));
-        }
+        if (!$auth->getUser()->isLoggedIn()) return $this->redirect($this->url('auth.index'));
 
         $title = trim((string)$request->value('title'));
         $cookingTime = (int)$request->value('cooking_time');
@@ -227,8 +223,13 @@ class RecipeController extends BaseController
         $auth = $this->app->getAuthenticator();
         if (!$auth->getUser()->isLoggedIn()) return $this->redirect($this->url('auth.index'));
 
-        $userId = User::findByUsername($auth->getUser()->getName())->getId();
-        $recipes = Recipe::getAll('author_id = ?', [$userId]);
+        $user = User::findByUsername($auth->getUser()->getName());
+        $userId = $user->getId();
+        if ($user->getRole() === 'ADMIN')
+            $recipes = Recipe::getAll();
+        else
+            $recipes = Recipe::getAll('author_id = ?', [$userId]);
+
         return $this->html(['recipes' => $recipes]);
     }
 
@@ -240,7 +241,8 @@ class RecipeController extends BaseController
         $recipeId = (int)$request->get('id');
         $recipe = Recipe::getOne($recipeId);
         $recipeImage = $recipe->getImage();
-        if ($recipe && $recipe->getAuthorId() === User::findByUsername($auth->getUser()->getName())->getId()) {
+        $user = User::findByUsername($auth->getUser()->getName());
+        if ($recipe && ($recipe->getAuthorId() === $user->getId() || $user->getRole() === 'ADMIN')) {
             if ($recipeImage) {
                 $imagePath = __DIR__ . '/../../public/images/' . $recipeImage;
                 if (file_exists($imagePath)) unlink($imagePath);
@@ -260,9 +262,14 @@ class RecipeController extends BaseController
 
         $recipeId = (int)$request->get('id');
         $recipe = Recipe::getOne($recipeId);
-        if (!$recipe || $recipe->getAuthorId() !== User::findByUsername($auth->getUser()->getName())->getId()) {
-            return $this->redirect($this->url('owned'));
-        }
+
+        if (!$recipe) return $this->redirect($this->url('owned'));
+        $user = User::findByUsername($auth->getUser()->getName());
+
+        if ($user->getRole() !== 'ADMIN')
+            if ($recipe->getAuthorId() !== $user->getId())
+                return $this->redirect($this->url('owned'));
+
         $temp = $recipe->getIngredientsIds();
         $recipeIngredients = array_map(fn($row) => $row['ingredient_id'], $temp);
 
@@ -287,9 +294,9 @@ class RecipeController extends BaseController
 
         $recipeId = (int)$request->get('id');
         $recipe = Recipe::getOne($recipeId);
-        if (!$recipe || $recipe->getAuthorId() !== User::findByUsername($auth->getUser()->getName())->getId()) {
+        $user = User::findByUsername($auth->getUser()->getName());
+        if (!$recipe || ($recipe->getAuthorId() !== $user->getId() && $user->getRole() !== 'ADMIN'))
             return $this->redirect($this->url('owned'));
-        }
 
         $title = trim((string)$request->value('title'));
         $cookingTime = (int)$request->value('cooking_time');
@@ -332,3 +339,4 @@ class RecipeController extends BaseController
         return $this->redirect($this->url('update', ['message' => 'Recipe updated successfully!']));
     }
 }
+

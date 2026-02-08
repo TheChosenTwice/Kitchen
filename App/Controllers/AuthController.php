@@ -50,7 +50,10 @@ class AuthController extends BaseController
         if ($request->hasValue('submit')) {
             $logged = $this->app->getAuthenticator()->login($request->value('username'), $request->value('password'));
             if ($logged) {
-                return $this->redirect($this->url("admin.index"));
+                $auth = $this->app->getAuthenticator();
+                if (User::findByUsername($auth->getUser()->getName())->getRole() === 'ADMIN')
+                    return $this->redirect($this->url("admin.index"));
+                return $this->redirect($this->url("home.index"));
             }
         }
 

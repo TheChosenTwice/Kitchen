@@ -224,4 +224,15 @@ class RecipeController extends BaseController
 
         return $this->redirect($this->url('create', ['message' => 'Recipe posted successfully!']));
     }
+
+    public function owned(Request $request) : Response
+    {
+        $auth = $this->app->getAuthenticator();
+        if (!$auth->getUser()->isLoggedIn()) return $this->redirect($this->url('auth.index'));
+
+        $userId = User::findByUsername($auth->getUser()->getName())->getId();
+        $recipes = Recipe::getAll('author_id = ?', [$userId]);
+        return $this->html(['recipes' => $recipes]);
+    }
+
 }
